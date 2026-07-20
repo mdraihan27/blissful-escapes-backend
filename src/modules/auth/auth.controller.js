@@ -3,10 +3,15 @@ import { catchAsync } from '../../utils/catchAsync.js';
 import { COOKIE_NAME } from '../../middlewares/auth.middleware.js';
 import { isProduction } from '../../config/env.js';
 
+// The frontend (Netlify) and backend (Heroku) are on different sites, so the
+// session cookie is cross-site. Browsers only send a cross-site cookie when it
+// is SameSite=None, and they require Secure=true alongside SameSite=None. In
+// local dev (http, same host) we fall back to Lax so the cookie still works
+// without https.
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: isProduction,
-  sameSite: isProduction ? 'strict' : 'lax',
+  secure: isProduction, // required by browsers when sameSite is 'none'
+  sameSite: isProduction ? 'none' : 'lax',
   maxAge: 24 * 60 * 60 * 1000,
   path: '/',
 };
