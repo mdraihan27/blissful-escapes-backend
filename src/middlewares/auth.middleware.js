@@ -3,21 +3,13 @@ import { catchAsync } from '../utils/catchAsync.js';
 import { verifyAccessToken } from '../utils/jwt.js';
 import { User } from '../modules/auth/user.model.js';
 
-export const COOKIE_NAME = 'access_token';
-
 /**
- * Protects a route. Accepts the JWT from the httpOnly cookie (preferred)
- * or an Authorization: Bearer header.
+ * Protects a route. Reads the JWT from the "Authorization: Bearer <token>"
+ * header (the client stores the token and sends it on every request).
  */
 export const requireAuth = catchAsync(async (req, res, next) => {
-  let token = req.cookies?.[COOKIE_NAME];
-
-  if (!token) {
-    const header = req.headers.authorization;
-    if (header?.startsWith('Bearer ')) {
-      token = header.slice(7);
-    }
-  }
+  const header = req.headers.authorization;
+  const token = header?.startsWith('Bearer ') ? header.slice(7) : null;
 
   if (!token) {
     throw ApiError.unauthorized('Authentication required');

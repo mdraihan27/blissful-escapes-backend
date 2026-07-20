@@ -10,8 +10,6 @@ yarn-error.log*
 pnpm-debug.log*
 
 # Environment variables
-.env
-.env.*
 !.env.example
 
 # Runtime data
@@ -37,7 +35,6 @@ build/
 Thumbs.db
 
 # Editor directories and files
-.vscode/
 .idea/
 *.swp
 *.swo
@@ -48,3 +45,4 @@ temp/
 
 # Optional
 *.tgz
+config.bat
