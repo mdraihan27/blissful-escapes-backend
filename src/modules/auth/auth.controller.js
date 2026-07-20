@@ -23,9 +23,37 @@ function sendSession(res, user, accessToken, message) {
 }
 
 export const login = catchAsync(async (req, res) => {
+  // --- Heroku debug logging (grep for "[login]" in `heroku logs --tail`) ---
+  console.log('[login] request received', {
+    origin: req.headers.origin ?? '(no origin header)',
+    referer: req.headers.referer ?? '(none)',
+    method: req.method,
+    userId: req.body?.userId ?? '(missing)',
+    hasPassword: Boolean(req.body?.password),
+    isProduction,
+    cookieOptions: COOKIE_OPTIONS,
+    'x-forwarded-proto': req.headers['x-forwarded-proto'] ?? '(none)',
+  });
+
   const { userId, password } = req.body;
-  const { user, accessToken } = await authService.login(userId, password);
-  sendSession(res, user, accessToken, 'Logged in successfully');
+
+  try {
+    const { user, accessToken } = await authService.login(userId, password);
+    console.log('[login] SUCCESS — issuing session cookie', {
+      userId: user.userId,
+      cookieName: COOKIE_NAME,
+      sameSite: COOKIE_OPTIONS.sameSite,
+      secure: COOKIE_OPTIONS.secure,
+    });
+    sendSession(res, user, accessToken, 'Logged in successfully');
+  } catch (err) {
+    console.warn('[login] FAILED', {
+      userId: req.body?.userId ?? '(missing)',
+      statusCode: err.statusCode ?? 500,
+      message: err.message,
+    });
+    throw err;
+  }
 });
 
 export const forgotPassword = catchAsync(async (req, res) => {
